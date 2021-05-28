@@ -1,0 +1,2 @@
+model_checkpoint_path: "Ambulance_checkpoint_ver2"
+all_model_checkpoint_paths: "Ambulance_checkpoint_ver2"
