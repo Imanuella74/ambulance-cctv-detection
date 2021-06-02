@@ -53,7 +53,7 @@ OIDv6/test/ambulance/labels
 ```
 
 ## Dataset Preprocessing
-To minimize Overfit and improving variance in the training data, we used `ImageDataGenerator` to augment the train Dataset.
+To minimize Overfit and improving variance in the training data, we used `ImageDataGenerator` function to augment the train Dataset. The fuction respectively label each image based on their folder name.
 ```python
 train_datagen = ImageDataGenerator(
     rescale=(1/255.),              # normalize the image vector, by dividing with 255.
@@ -84,7 +84,7 @@ train_generator=train_datagen.flow_from_directory(
     traindir,
     target_size =(224, 224),       # rescale the image into 224 x 224 to be matched as model input scale
     class_mode='categorical',      # type of label arrays that are returned
-    batch_size=32                  # make image batch size to 32, train step = 
+    batch_size=32                  # make image batch size to 32, train step = totalImg/ batch
     )
 
 test_generator=test_datagen.flow_from_directory(
@@ -109,13 +109,13 @@ class_weights = class_weight.compute_class_weight(
 
 print(class_weights)
 ```
+```python
 Found 3338 images belonging to 5 classes.
-
 Found 2243 images belonging to 5 classes.
-
 Found 1399 images belonging to 5 classes.
 
 {'.ipynb_checkpoints': 0, 'ambulance': 1, 'bus': 2, 'car': 3, 'truck': 4}
+```
 
 ### Plotting the Augmented image
 ```python
@@ -811,7 +811,220 @@ plt.show()
 ```
 ![image](https://user-images.githubusercontent.com/12151051/120288352-4f176080-c2ea-11eb-8bdf-eb00453b50fb.png)
 
-#### As we can see, the model is not suffering from overfit and already have a good Training and Validation Accuracy after just 25 epochs.
+As we can see from the graph, the model is not suffering to much from overfit, we can see it has found its convergence (no significant growth in the graph), It's also have a good Training and Validation Accuracy after just 25 epochs.
+
+### Evaluate Test Accuracy
+```python
+loss, accuracy = model.evaluate(test_generator)
+print('Test accuracy :', accuracy)
+```
+```
+71/71 [==============================] - 129s 2s/step - loss: 0.5047 - accuracy: 0.8235
+Test accuracy : 0.8234507441520691
+```
+
+### Saving the Model
+Saving as TF format using
+```python
+save_path = 'Model/TheATeam_model_ver2'
+model.save(save_path)
+```
+
+The exported model will be structered as follows
+```
+Model
+ ├── 📂TheATeam_model_ver2
+ │ ├── 📂Assets                    # Contains files used by the TensorFlow graph(not used now).
+ │ ├── 📂Variables                 # Contains a standard training checkpoint
+ │ ├── 📃saved_model.pb            # The saved model
+```
+
+We also save the model as `HDF5` format, using
+```python
+file_name = 'TheATeam_model_ver2.h5'
+model.save( file_name,save_format='h5' )
+```
+
+## Testing
+To test the model, we proposed a video file (.mp4) classification and not using CCTV input stream yet.
+
+### Importing Required Library
+```python
+import tensorflow as tf
+import numpy as np
+import cv2
+import pytube
+import os
+
+from PIL import Image
+from skimage import transform
+```
+
+### Load the Model
+```python
+
+my_model = tf.keras.models.load_model('Model/TheATeam_model_ver2', compile = True)
+```
+*Make the compile argument* `True` *to compile the model after loading.*
+
+*The example video that we are using [Link](https://youtu.be/bnX1JqglJ2E).*
+### Infference Function
+```python
+#5 Load and pre-process image frames
+ def load_frames(frame):
+     frames = Image.open(frame)
+     frames = np.array(frames).astype('float32')/255
+     frames = transform.resize(frames, (224, 224, 3))
+     frames = np.expand_dims(frames, axis=0)
+     return frames
+
+ #1 get video
+ vidcap = cv2.VideoCapture('../ambulance.mp4')
+
+ #3 converting video into frame image (jpg format)
+ def getFrame(sec):
+     vidcap.set(cv2.CAP_PROP_POS_MSEC,sec*1000)
+     hasFrames,image = vidcap.read()
+
+     if hasFrames:
+         # Specify frame path file
+         framePath = "../video-frames/"+str(count)+"_frame.jpg"
+         # save frame as JPG file
+         cv2.imwrite(framePath, image)
+
+         #4 Load and Predict Frame directly
+         image = load_frames(framePath)
+         result = my_model.predict(image)
+
+         #6 Print ambulance detected or not and probability value
+          predict_result = (str(count)+") Ambulance Detected: {}".format("%.3f" % result[0][1]) if result[0][1]>0.03 
+              else str(count)+") Ambulance not detected: {}".format("%.3f" % result[0][1]))
+     return hasFrames
+
+ sec = 0
+ frameRate = 5               # Capture Image in Second
+ count = 1                   # Video Frame Count
+ success = getFrame(sec)     # Initial Function to Get the Frame and Predict the Frame
+
+ #2 Looping the function to get the frame and predict frame directly
+ while success:
+     count = count + 1
+     sec = sec + frameRate
+     sec = round(sec, 2)
+     success = getFrame(sec)
+```
+### Result
+<details> 
+   <summary>
+    Test Result
+   </summary>
+   <pre>
+1) Ambulance Detected: 0.059
+2) Ambulance not detected: 0.001
+3) Ambulance Detected: 0.666
+4) Ambulance Detected: 0.441
+5) Ambulance Detected: 0.543
+6) Ambulance Detected: 0.700
+7) Ambulance not detected: 0.002
+8) Ambulance not detected: 0.006
+9) Ambulance not detected: 0.022
+10) Ambulance not detected: 0.020
+11) Ambulance Detected: 0.088
+12) Ambulance not detected: 0.015
+13) Ambulance not detected: 0.007
+14) Ambulance Detected: 0.597
+15) Ambulance Detected: 0.769
+16) Ambulance Detected: 0.039
+17) Ambulance Detected: 0.092
+18) Ambulance Detected: 0.218
+19) Ambulance Detected: 0.292
+20) Ambulance Detected: 0.170
+21) Ambulance Detected: 0.232
+22) Ambulance not detected: 0.013
+23) Ambulance Detected: 0.163
+24) Ambulance Detected: 0.189
+25) Ambulance not detected: 0.009
+26) Ambulance Detected: 0.385
+27) Ambulance Detected: 0.046
+28) Ambulance Detected: 0.368
+29) Ambulance Detected: 0.861
+30) Ambulance Detected: 0.315
+31) Ambulance not detected: 0.021
+32) Ambulance Detected: 0.059
+   </pre>
+</details>
+*Each Numeber is counted the same as the frame number sequences*
+
+### Example Resulted Frame
+
+![image](https://user-images.githubusercontent.com/12151051/120451739-e26c9680-c3bb-11eb-9f49-7e2e78247496.png)
+
+![image](https://user-images.githubusercontent.com/12151051/120452318-5313b300-c3bc-11eb-812e-a718b17eb12c.png)
+
 
 ## Deployment
-### Testing
+We are using Flask (a python framework) to deploy it in the server and serves as REST API. When the API is send, it will return predicted value as a JSON format.
+
+Transfering from previous test code in flask, and add socket so it can be requested at any time.
+```python
+def predict_process():
+    # Code here
+    #loading the model
+    my_model = tf.keras.models.load_model('./TheATeam_model_ver2.h5', compile=True)
+
+    #5 Load and pre-process image frames
+    def load_frames(frame):
+        frames = Image.open(frame)
+        frames = np.array(frames).astype('float32')/255
+        frames = transform.resize(frames, (224, 224, 3))
+        frames = np.expand_dims(frames, axis=0)
+        return frames
+
+    #1 get video
+    vidcap = cv2.VideoCapture('../ambulance.mp4')
+
+    #3 converting video into frame image (jpg format)
+    def getFrame(sec):
+        vidcap.set(cv2.CAP_PROP_POS_MSEC,sec*1000)
+        hasFrames,image = vidcap.read()
+
+        if hasFrames:
+            # Specify frame path file
+            framePath = "../video-frames/"+str(count)+"_frame.jpg"
+            # save frame as JPG file
+            cv2.imwrite(framePath, image)
+
+            #4 Load and Predict Frame directly
+            image = load_frames(framePath)
+            result = my_model.predict(image)
+
+            #6 Return ambulance detected or not, probability value, and in which frame
+            predict_result = {
+                "ambulance_detected": 1 if result[0][1] > 0.03 else 0,
+                "frame_number": count,
+                "precentage": "{}".format("%.3f" % result[0][1])
+            }
+            emit('predict_result', json.dumps(predict_result), broadcast=True)
+
+        return hasFrames
+
+    sec = 0
+    frameRate = 5 # Capture image in second
+    count=1
+    success = getFrame(sec) # Initial function to get the frame and predict frame
+
+    # Looping the function to get the frame and predict frame directly
+    while success:
+        count = count + 1
+        sec = sec + frameRate
+        sec = round(sec, 2)
+        success = getFrame(sec)
+        
+# Defining Socket that can be called by emit predict and see the result at the listener
+@socketio.on('predict')
+def predict(data):
+    emit('predict_result', 'Predict Start', broadcast=True)
+    predict_process()        
+    emit('predict_result', 'Predict End', broadcast=True)
+```
+*The Complete Flask Code can be Found [Here}(https://github.com/Imanuella74/ambulance-cctv-detection/blob/main/ambulance-notifier-service/app.py)*
