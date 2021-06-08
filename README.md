@@ -1,5 +1,9 @@
 # Ambulance CCTV Detection
 *Created Using Python 3.7.10 and Tensorflow 2.4.1*
+
+### Full Code 
+[![Open In Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Imanuella74/ambulance-cctv-detection/blob/main/Ambulance%20CCTV%20Detection.ipynb) 
+
 ### Installing required library
 ```cmd
 !pip install -r requirements.txt
@@ -867,7 +871,6 @@ my_model = tf.keras.models.load_model('Model/TheATeam_model_ver2', compile = Tru
 ```
 *Make the compile argument* `True` *to compile the model after loading.*
 
-*The example video that we are using [Link](https://youtu.be/bnX1JqglJ2E).*
 ### Infference Function
 ```python
 #5 Load and pre-process image frames
@@ -961,6 +964,11 @@ my_model = tf.keras.models.load_model('Model/TheATeam_model_ver2', compile = Tru
 
 ![image](https://user-images.githubusercontent.com/12151051/120452318-5313b300-c3bc-11eb-812e-a718b17eb12c.png)
 
+### Actual Moving Frames
+
+<img src="https://github.com/Imanuella74/ambulance-cctv-detection/blob/main/Ambulance_passing.gif" width="360" />
+
+*The example video that we are using [Link](https://youtu.be/bnX1JqglJ2E).*
 
 ## Deployment
 We are using Flask (a python framework) to deploy it in the server and serves as REST API. When the API is send, it will return predicted value as a JSON format.
@@ -1027,4 +1035,16 @@ def predict(data):
     predict_process()        
     emit('predict_result', 'Predict End', broadcast=True)
 ```
-*The Complete Flask Code can be Found [Here}(https://github.com/Imanuella74/ambulance-cctv-detection/blob/main/ambulance-notifier-service/app.py)*
+The Complete Flask Code can be Found [Here](https://github.com/Imanuella74/ambulance-cctv-detection/blob/main/ambulance-notifier-service/app.py)
+
+How to deploy on the cloud can be found [Here](https://github.com/daffaalfandy/ambulance-notifier-service/blob/main/README.md)
+
+# Credits
+
+Thanks to:
+
+- [Nanditya Nuswatama](https://github.com/NandityaNuswatama) as Designer and Mobile Developer.
+- [Musthoffa Ammar](https://github.com/musthofaammar) as Mobile Developer.
+- [Emanuella Wintari](https://github.com/Imanuella74/) as Second Machine Learning Engineer.
+- [Natalia Syafitri](https://www.linkedin.com/in/natalia-syafitri-kustanto/) as as non technical team member.
+- [M. Daffa Alfandy](https://github.com/daffaalfandy) as Cloud Engineer.
