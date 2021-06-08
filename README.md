@@ -1045,6 +1045,5 @@ Thanks to:
 
 - [Nanditya Nuswatama](https://github.com/NandityaNuswatama) as Designer and Mobile Developer.
 - [Musthoffa Ammar](https://github.com/musthofaammar) as Mobile Developer.
-- [Emanuella Wintari](https://github.com/Imanuella74/) as Second Machine Learning Engineer.
 - [Natalia Syafitri](https://www.linkedin.com/in/natalia-syafitri-kustanto/) as as non technical team member.
 - [M. Daffa Alfandy](https://github.com/daffaalfandy) as Cloud Engineer.
