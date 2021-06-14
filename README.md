@@ -970,6 +970,8 @@ my_model = tf.keras.models.load_model('Model/TheATeam_model_ver2', compile = Tru
 
 *The example video that we are using [Link](https://youtu.be/bnX1JqglJ2E).*
 
+For future implementation, we will use video stream from CCTV camera palced on the traffic light, and will do inference every 5 seconds when there is a path that crossing the junction.
+
 ## Deployment
 We are using Flask (a python framework) to deploy it in the server and serves as REST API. When the API is send, it will return predicted value as a JSON format.
 
